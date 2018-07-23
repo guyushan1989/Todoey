@@ -7,16 +7,18 @@
 //
 
 import UIKit
+import CoreData
 
 class TodoListViewController: UITableViewController {
     
     var itemArray = [Item]()
-     let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    let context = (UIApplication.shared.delegate as! AppDelegate ).persistentContainer.viewContext
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        loadItems()
+//        loadItems()
         
     }
     //mark-: Tableview Datasource Methods
@@ -48,8 +50,10 @@ class TodoListViewController: UITableViewController {
             textField = alertTextField
             }
         let action = UIAlertAction(title: "add new item", style: .default) { (action) in
-            let newItem = Item()
+            
+            let newItem = Item(context: self.context)
             newItem.title = textField.text!
+            newItem.done = false
             self.itemArray.append(newItem)
             self.saveItems()
            
@@ -60,26 +64,24 @@ class TodoListViewController: UITableViewController {
     }
     func saveItems() {
         
-        let encoder = PropertyListEncoder()
         do {
-            let data = try encoder.encode(self.itemArray)
-            try data.write(to: dataFilePath!)
+          try context.save()
             
         } catch {
-            print("Error encoding")
+            print("Error save")
         }
         
         self.tableView.reloadData()
     }
-    func loadItems() {
-        let decoder = PropertyListDecoder()
-        do {
-            guard let data = try? Data(contentsOf: dataFilePath!) else { return }
-            itemArray = try decoder.decode([Item].self, from: data)
-            
-        } catch {
-            print("something Error")
-        }
-    }
+//    func loadItems() {
+//        let decoder = PropertyListDecoder()
+//        do {
+//            guard let data = try? Data(contentsOf: dataFilePath!) else { return }
+//            itemArray = try decoder.decode([Item].self, from: data)
+//
+//        } catch {
+//            print("something Error")
+//        }
+//    }
 }
 
